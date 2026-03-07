@@ -4,17 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บันทึกมื้ออาหาร - Calorie Tracker</title>
+    <style>
+        /* CSS สำหรับกล่อง Autocomplete ให้มันห้อยลงมาสวยๆ */
+        .autocomplete-container {
+            position: relative;
+            width: 300px;
+        }
+        .autocomplete-list {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+        }
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #d4d4d4;
+        }
+        .autocomplete-item:hover {
+            background-color: #e9e9e9; /* สีตอนเอาเมาส์ชี้ */
+        }
+    </style>
 </head>
 <body>
 
     <h2>➕ บันทึกมื้ออาหาร</h2>
     
     <form id="addFoodForm">
-        <div>
-            <label>เลือกเมนูอาหาร:</label><br>
-            <select id="foodSelect" required>
-                <option value="">กำลังโหลดรายการอาหาร...</option>
-            </select>
+        
+        <div class="autocomplete-container">
+            <label>🔍 ค้นหาและเลือกเมนูอาหาร:</label><br>
+            
+            <input type="text" id="foodSearchInput" placeholder="พิมพ์ชื่ออาหาร เช่น กะเพรา..." autocomplete="off" style="width: 100%; padding: 8px;" required>
+            
+            <input type="hidden" id="selectedFoodId" required>
+            
+            <div id="autocompleteList" class="autocomplete-list"></div>
         </div>
         <br>
         
@@ -43,56 +73,89 @@
 
 
     <script>
-        // 1. เช็คสิทธิ์ก่อนเข้าใช้งาน (ต้อง Login แล้วเท่านั้น)
         const userId = localStorage.getItem('userId');
         if (!userId) {
             alert('กรุณาเข้าสู่ระบบก่อนครับ 🛑');
             window.location.href = 'index.html';
         }
 
-        // 2. ฟังก์ชันโหลดรายชื่ออาหารมาใส่ใน Dropdown
+        let allFoods = [];
+        const searchInput = document.getElementById('foodSearchInput');
+        const hiddenFoodId = document.getElementById('selectedFoodId');
+        const autocompleteList = document.getElementById('autocompleteList');
+
+        // 1. โหลดอาหารทั้งหมดมาเก็บไว้ในความจำ
         async function loadFoods() {
             try {
-                // วิ่งไปขอเมนูอาหารทั้งหมดจาก Backend
                 const response = await fetch('http://localhost:3000/foods');
-                const foods = await response.json();
-                const foodSelect = document.getElementById('foodSelect');
-                
-                // ล้างข้อความ "กำลังโหลด..." ทิ้ง แล้วใส่ตัวเลือกแรก
-                foodSelect.innerHTML = '<option value="">-- กรุณาเลือกอาหาร --</option>';
-                
-                // เอาเมนูอาหารที่ได้มา วนลูปสร้างเป็นตัวเลือก <option>
-                foods.forEach(food => {
-                    const option = document.createElement('option');
-                    option.value = food.id; // เวลาส่งไป Backend เราจะส่งแค่ ID
-                    option.innerText = `${food.name} (${food.calories} kcal)`; // แต่เวลาโชว์ให้คนดู โชว์ชื่อกับแคลอรี่
-                    foodSelect.appendChild(option);
-                });
+                allFoods = await response.json();
             } catch (error) {
                 console.error('Error loading foods:', error);
-                document.getElementById('foodSelect').innerHTML = '<option value="">โหลดข้อมูลไม่สำเร็จ</option>';
             }
         }
 
-        // 3. จัดการตอนผู้ใช้กดปุ่ม "บันทึกข้อมูล"
-        document.getElementById('addFoodForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); // เบรกไม่ให้หน้าเว็บกระพริบ
+        // 2.ดักจับเวลาผู้ใช้พิมพ์ค้นหา
+        searchInput.addEventListener('input', function() {
+            const searchText = this.value.toLowerCase();
             
-            // ดึงข้อมูลจากฟอร์ม
-            const foodId = document.getElementById('foodSelect').value;
+            // ล้างกล่องตัวเลือก และลบ ID ที่เคยเลือกไว้ (เผื่อผู้ใช้เปลี่ยนใจพิมพ์ใหม่)
+            autocompleteList.innerHTML = '';
+            hiddenFoodId.value = '';
+
+            // ถ้าช่องค้นหาว่างเปล่า ก็ไม่ต้องทำอะไรต่อ
+            if (!searchText) return;
+
+            // กรองหาเมนูที่ตรงกับคำที่พิมพ์
+            const filteredFoods = allFoods.filter(food => 
+                food.name.toLowerCase().includes(searchText)
+            );
+
+            // วนลูปสร้างตัวเลือกมาห้อยไว้ใต้ช่องพิมพ์
+            filteredFoods.forEach(food => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'autocomplete-item';
+                itemDiv.innerHTML = `<strong>${food.name}</strong> <span style="color: gray; font-size: 0.9em;">(${food.calories} kcal)</span>`;
+                
+                // เมื่อผู้ใช้ "คลิก" เลือกเมนูนี้
+                itemDiv.addEventListener('click', function() {
+                    searchInput.value = food.name; // เอาชื่อไปแปะในช่องพิมพ์ให้สวยๆ
+                    hiddenFoodId.value = food.id;  // เอา ID ไปแอบไว้ในช่องล่องหน
+                    autocompleteList.innerHTML = ''; // ปิดกล่องตัวเลือก
+                });
+
+                autocompleteList.appendChild(itemDiv);
+            });
+        });
+
+        // ลูกเล่นเสริม: ถ้าคลิกที่ว่างๆ บนหน้าเว็บ ให้ปิดกล่องตัวเลือกทิ้ง
+        document.addEventListener('click', function (e) {
+            if (e.target !== searchInput) {
+                autocompleteList.innerHTML = '';
+            }
+        });
+
+        // จัดการตอนกดปุ่มบันทึกมื้ออาหาร
+        document.getElementById('addFoodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // ดึง ID อาหารจาก "ช่องล่องหน"
+            const foodId = hiddenFoodId.value;
             const quantity = document.getElementById('quantity').value;
             const mealType = document.getElementById('mealType').value;
-            
-            // หาวันที่ปัจจุบัน (เช่น 2026-03-07)
             const today = new Date().toISOString().split('T')[0];
 
+            // เช็คความชัวร์ว่าเลือกอาหารจากกล่องจริงๆ ไม่ใช่แค่พิมพ์เล่นๆ
+            if (!foodId) {
+                alert('กรุณาคลิกเลือกเมนูอาหารจากรายการที่ค้นพบด้วยครับ');
+                return;
+            }
+
             try {
-                // ส่งข้อมูลไปบันทึกที่ Backend
                 const response = await fetch('http://localhost:3000/food-logs', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        user_id: userId, // ดึงจากกระเป๋าเป้ localStorage
+                        user_id: userId,
                         food_id: foodId,
                         quantity: quantity,
                         meal_type: mealType,
@@ -100,22 +163,16 @@
                     })
                 });
 
-                const data = await response.json();
-
                 if (response.ok) {
-                    alert('บันทึกมื้ออาหารสำเร็จ! 😋');
-                    // บันทึกเสร็จแล้ว ให้เด้งกลับไปดูผลงานที่หน้า Dashboard
-                    window.location.href = 'dashboard.html'; 
-                } else {
-                    alert('เกิดข้อผิดพลาด: ' + data.error);
+                    alert('บันทึกมื้ออาหารสำเร็จ!');
+                    window.location.href = 'dashboard.html';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
             }
         });
 
-        // สั่งให้โหลดรายชื่ออาหารทันทีที่เปิดหน้านี้
+        // สั่งโหลดรายชื่ออาหารทันที
         loadFoods();
     </script>
 </body>

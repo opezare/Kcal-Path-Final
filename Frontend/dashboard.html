@@ -11,13 +11,13 @@
     <button id="logoutBtn">ออกจากระบบ</button>
     <hr>
 
-    <h2>👤 ข้อมูลของคุณ: <span id="userNameShow">กำลังโหลด...</span></h2>
+    <h2>ข้อมูลของคุณ: <span id="userNameShow">กำลังโหลด...</span></h2>
     <p>น้ำหนัก: <span id="userWeight">-</span> กก. | ส่วนสูง: <span id="userHeight">-</span> ซม.</p>
     <hr>
 
-    <h2>📊 สรุปแคลอรี่วันนี้ (<span id="todayDate"></span>)</h2>
-    <p>🔥 แคลอรี่รวม: <b><span id="totalCalories">0</span> kcal</b></p>
-    <p>🥩 โปรตีน: <span id="totalProtein">0</span> g | 🍚 คาร์บ: <span id="totalCarbs">0</span> g | 🥑 ไขมัน: <span id="totalFat">0</span> g</p>
+    <h2>สรุปแคลอรี่วันนี้ (<span id="todayDate"></span>)</h2>
+    <p>แคลอรี่รวม: <b><span id="totalCalories">0</span> kcal</b></p>
+    <p>โปรตีน: <span id="totalProtein">0</span> g | คาร์บ: <span id="totalCarbs">0</span> g | ไขมัน: <span id="totalFat">0</span> g</p>
 
     <h3>รายการอาหารที่กินวันนี้:</h3>
     <ul id="foodList">
@@ -34,7 +34,7 @@
         
         if (!userId) {
             // ถ้าไม่มี userId แปลว่าแอบเข้าหน้านี้โดยไม่ได้ล็อกอิน -> เตะกลับไปหน้าแรก!
-            alert('กรุณาเข้าสู่ระบบก่อนครับ 🛑');
+            alert('กรุณาเข้าสู่ระบบก่อนครับ');
             window.location.href = 'index.html';
         }
 
@@ -81,7 +81,7 @@
                     foodList.innerHTML = ''; // ล้างข้อความ "กำลังโหลด..." ทิ้ง
 
                     if (data.logs.length === 0) {
-                        foodList.innerHTML = '<li>ยังไม่ได้บันทึกอาหารเลย เริ่มกินได้แล้ว! 😋</li>';
+                        foodList.innerHTML = '<li>ยังไม่ได้บันทึกอาหารเลย เริ่มกินได้แล้ว!</li>';
                     } else {
                         data.logs.forEach(log => {
                             const li = document.createElement('li');
