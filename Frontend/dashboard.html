@@ -11,8 +11,21 @@
     <button id="logoutBtn">ออกจากระบบ</button>
     <hr>
 
-    <h2>ข้อมูลของคุณ: <span id="userNameShow">กำลังโหลด...</span></h2>
-    <p>น้ำหนัก: <span id="userWeight">-</span> กก. | ส่วนสูง: <span id="userHeight">-</span> ซม.</p>
+    <h2>👤 ข้อมูลของคุณ: <span id="userNameShow">กำลังโหลด...</span></h2>
+    <p>
+        น้ำหนัก: <span id="userWeight">-</span> กก. | 
+        ส่วนสูง: <span id="userHeight">-</span> ซม. |
+        อายุ: <span id="userAge">-</span> ปี |
+        เพศ: <span id="userGender">-</span>
+    </p>
+
+    <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px solid #b0d4f1; margin-bottom: 20px;">
+        <h3 style="margin-top: 0;">ข้อมูลสุขภาพพื้นฐานของคุณ</h3>
+        <p><b>BMI (ดัชนีมวลกาย):</b> <span id="userBMI">-</span> <span id="bmiMeaning" style="font-weight: bold; color: #555;"></span></p>
+        <p><b>BMR (พลังงานพื้นฐานเผาผลาญตอนพัก):</b> <span id="userBMR">-</span> kcal/วัน</p>
+        <p><b>TDEE (เป้าหมายแคลอรี่ที่ควรได้รับต่อวัน):</b> <span id="userTDEE">-</span> kcal/วัน</p>
+        <p><b>เป้าหมายของคุณ:</b> <span id="userGoalShow" style="color: blue; font-weight: bold;">-</span></p>
+    </div>
     <hr>
 
     <h2>สรุปแคลอรี่วันนี้ (<span id="todayDate"></span>)</h2>
@@ -29,7 +42,7 @@
 
 
     <script>
-        // 1. เช็คก่อนว่า "ล็อกอินหรือยัง?" (ตรวจสอบกระเป๋าเป้ localStorage)
+        // เช็คก่อนว่า "ล็อกอินหรือยัง?" (ตรวจสอบกระเป๋าเป้ localStorage)
         const userId = localStorage.getItem('userId');
         
         if (!userId) {
@@ -38,28 +51,96 @@
             window.location.href = 'index.html';
         }
 
-        // 2. ฟังก์ชันออกจากระบบ (เคลียร์กระเป๋าเป้ทิ้ง แล้วกลับไปหน้า Login)
+        // ฟังก์ชันออกจากระบบ (เคลียร์กระเป๋าเป้ทิ้ง แล้วกลับไปหน้า Login)
         document.getElementById('logoutBtn').addEventListener('click', () => {
             localStorage.clear(); 
             window.location.href = 'index.html';
         });
 
-        // 3. ดึงข้อมูลส่วนตัว (เรียก API /users/:id)
+        // ดึงข้อมูลส่วนตัว และคำนวณค่าสุขภาพ (เรียก API /users/:id)
         async function fetchProfile() {
             try {
                 const response = await fetch(`http://localhost:3000/users/${userId}`);
                 const userData = await response.json();
 
-                // เอาข้อมูลไปแปะตามจุดต่างๆ ใน HTML
+                console.log("ข้อมูลที่ได้จาก API:", userData);
+
+                //แปะข้อมูลพื้นฐาน
                 document.getElementById('userNameShow').innerText = userData.username;
                 document.getElementById('userWeight').innerText = userData.weight || '-';
                 document.getElementById('userHeight').innerText = userData.height || '-';
+                document.getElementById('userAge').innerText = userData.age || '-';
+                
+                // แปลงเพศเป็นภาษาไทยให้ดูง่าย
+                let genderTh = '-';
+                if (userData.gender === 'male') genderTh = 'ชาย';
+                if (userData.gender === 'female') genderTh = 'หญิง';
+                document.getElementById('userGender').innerText = genderTh;
+
+                // เริ่มการคำนวณ (เช็คก่อนว่ามีข้อมูลครบไหม) 
+                if (userData.weight && userData.height && userData.age && userData.gender) {
+                    const w = parseFloat(userData.weight);
+                    const h = parseFloat(userData.height);
+                    const a = parseInt(userData.age);
+                    const gender = userData.gender;
+                    const activity = userData.activity_level;
+
+                    // --- คำนวณ BMI ---
+                    const heightInMeter = h / 100;
+                    const bmi = w / (heightInMeter * heightInMeter);
+                    document.getElementById('userBMI').innerText = bmi.toFixed(1); // ทศนิยม 1 ตำแหน่ง
+
+                    // แปลผล BMI
+                    let bmiText = '';
+                    if (bmi < 18.5) { bmiText = '(น้ำหนักน้อย / ผอม)'; document.getElementById('bmiMeaning').style.color = 'orange'; }
+                    else if (bmi < 22.9) { bmiText = '(ปกติ / สุขภาพดี)'; document.getElementById('bmiMeaning').style.color = 'green'; }
+                    else if (bmi < 24.9) { bmiText = '(ท้วม / เริ่มอ้วน)'; document.getElementById('bmiMeaning').style.color = 'orange'; }
+                    else if (bmi < 29.9) { bmiText = '(อ้วน / อ้วนระดับ 1)'; document.getElementById('bmiMeaning').style.color = 'red'; }
+                    else { bmiText = '(อ้วนมาก / อ้วนระดับ 2)'; document.getElementById('bmiMeaning').style.color = 'darkred'; }
+                    document.getElementById('bmiMeaning').innerText = bmiText;
+
+                    // --- คำนวณ BMR (สมการ Mifflin-St Jeor) ---
+                    let bmr = 0;
+                    if (gender === 'male') {
+                        bmr = (10 * w) + (6.25 * h) - (5 * a) + 5;
+                    } else if (gender === 'female') {
+                        bmr = (10 * w) + (6.25 * h) - (5 * a) - 161;
+                    }
+                    document.getElementById('userBMR').innerText = Math.round(bmr);
+
+                    // --- คำนวณ TDEE (คูณด้วยระดับกิจกรรม) ---
+                    let activityMultiplier = 1.2; // ค่าเริ่มต้น (นั่งทำงานทั้งวัน)
+                    if (activity === 'lightly_active') activityMultiplier = 1.375;
+                    else if (activity === 'moderately_active') activityMultiplier = 1.55;
+                    else if (activity === 'very_active') activityMultiplier = 1.725;
+                    else if (activity === 'extra_active') activityMultiplier = 1.9;
+
+                    const tdee = bmr * activityMultiplier;
+                    // นำเป้าหมายมาปรับ TDEE 
+                    let finalTDEE = tdee;
+                    let goalText = 'รักษาน้ำหนัก';
+                    
+                    if (userData.goal === 'lose') {
+                        finalTDEE = tdee - 500; // หักออก 500 แคล
+                        goalText = 'ลดน้ำหนัก ';
+                    } else if (userData.goal === 'gain') {
+                        finalTDEE = tdee + 500; // เพิ่ม 500 แคล
+                        goalText = 'เพิ่มน้ำหนัก ';
+                    } else {
+                        goalText = 'รักษาน้ำหนัก ';
+                    }
+
+                    // แสดงผลเป้าหมายและ TDEE ที่ปรับแก้แล้ว
+                    document.getElementById('userGoalShow').innerText = goalText;
+                    document.getElementById('userTDEE').innerText = Math.round(finalTDEE);
+                }
+
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error fetching profile:', error);
             }
         }
 
-        // 4. ดึงข้อมูลสรุปการกินวันนี้ (เรียก API /daily-summary)
+        // ดึงข้อมูลสรุปการกินวันนี้ (เรียก API /daily-summary)
         async function fetchDailySummary() {
             // หาวันที่ของวันนี้ในรูปแบบ YYYY-MM-DD
             const today = new Date().toISOString().split('T')[0];

@@ -47,25 +47,25 @@ app.get('/foods', (req, res) => {
 
 
 // API สำหรับสมัครสมาชิก (Register)
-
 app.post('/register', async (req, res) => {
     try {
-        // 1. รับข้อมูลที่ Frontend ส่งมา
-        const { username, email, password, weight, height, age, gender, activity_level } = req.body;
+        // รับข้อมูลที่ Frontend ส่งมา
+        const { username, password, email, weight, height, age, gender, activity_level, goal } = req.body;
 
-        // 2. เช็คว่ากรอกข้อมูลสำคัญครบไหม
+        // เช็คว่ากรอกข้อมูลสำคัญครบไหม
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'กรุณากรอก Username, Email และ Password ให้ครบ' });
         }
 
-        // 3. นำรหัสผ่านไปเข้ารหัส (Hash) ให้ปลอดภัย
+        // นำรหัสผ่านไปเข้ารหัส (Hash) ให้ปลอดภัย
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 4. บันทึกลงฐานข้อมูล MySQL
-        const sql = `INSERT INTO users (username, email, password, weight, height, age, gender, activity_level) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        const values = [username, email, hashedPassword, weight || null, height || null, age || null, gender || null, activity_level || null];
-
+        // บันทึกลงฐานข้อมูล MySQL
+        const sql = `INSERT INTO users (username, password, email, weight, height, age, gender, activity_level, goal) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                     
+        const values = [username, hashedPassword, email, weight, height, age, gender, activity_level, goal];
+        
         db.query(sql, values, (err, result) => {
             if (err) {
                 console.error('❌ Error บันทึกข้อมูล:', err);
@@ -90,12 +90,12 @@ app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // 1. เช็คว่ากรอกข้อมูลมาครบไหม
+        // เช็คว่ากรอกข้อมูลมาครบไหม
         if (!username || !password) {
             return res.status(400).json({ error: 'กรุณากรอก Username และ Password' });
         }
 
-        // 2. ค้นหาผู้ใช้ในฐานข้อมูลจาก Username
+        // ค้นหาผู้ใช้ในฐานข้อมูลจาก Username
         const sql = 'SELECT * FROM users WHERE username = ?';
         db.query(sql, [username], async (err, results) => {
             if (err) {
@@ -103,21 +103,21 @@ app.post('/login', async (req, res) => {
                 return res.status(500).json({ error: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์' });
             }
 
-            // 3. เช็คว่าเจอผู้ใช้นี้ในระบบไหม (ถ้า array ว่าง แปลว่าไม่เจอ)
+            // เช็คว่าเจอผู้ใช้นี้ในระบบไหม (ถ้า array ว่าง แปลว่าไม่เจอ)
             if (results.length === 0) {
                 return res.status(401).json({ error: '❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
             }
 
             const user = results[0]; // ดึงข้อมูลผู้ใช้คนที่เจอออกมา
 
-            // 4. ตรวจสอบรหัสผ่านด้วย bcrypt.compare()
+            // ตรวจสอบรหัสผ่านด้วย bcrypt.compare()
             const isMatch = await bcrypt.compare(password, user.password);
 
             if (!isMatch) {
                 return res.status(401).json({ error: '❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
             }
 
-            // 5. รหัสผ่านถูกต้อง! ส่งข้อมูลผู้ใช้กลับไปให้หน้าบ้าน (ไม่ส่งรหัสผ่านกลับไปนะ)
+            // รหัสผ่านถูกต้อง! ส่งข้อมูลผู้ใช้กลับไปให้หน้าบ้าน (ไม่ส่งรหัสผ่านกลับไปนะ)
             res.status(200).json({
                 message: '✅ เข้าสู่ระบบสำเร็จ!',
                 user: {
@@ -141,21 +141,21 @@ app.post('/login', async (req, res) => {
 
 app.post('/food-logs', (req, res) => {
     try {
-        // 1. รับข้อมูลการกินจากหน้าเว็บ
+        // รับข้อมูลการกินจากหน้าเว็บ
         const { user_id, food_id, quantity, meal_type, log_date } = req.body;
 
-        // 2. เช็คว่าส่งข้อมูลมาครบไหม
+        // เช็คว่าส่งข้อมูลมาครบไหม
         if (!user_id || !food_id || !meal_type || !log_date) {
             return res.status(400).json({ error: 'กรุณาส่งข้อมูล user_id, food_id, meal_type และ log_date ให้ครบถ้วน' });
         }
 
-        // 3. เตรียมคำสั่ง SQL เพื่อบันทึกลงตาราง food_logs
+        // เตรียมคำสั่ง SQL เพื่อบันทึกลงตาราง food_logs
         // quantity ถ้าไม่ส่งมาให้ตั้งค่าเริ่มต้นเป็น 1.00 (กิน 1 จาน/ชิ้น)
         const sql = `INSERT INTO food_logs (user_id, food_id, quantity, meal_type, log_date) 
                      VALUES (?, ?, ?, ?, ?)`;
         const values = [user_id, food_id, quantity || 1.00, meal_type, log_date];
 
-        // 4. สั่งรัน SQL
+        // สั่งรัน SQL
         db.query(sql, values, (err, result) => {
             if (err) {
                 console.error('❌ Error บันทึกข้อมูลการกิน:', err);
@@ -177,10 +177,10 @@ app.post('/food-logs', (req, res) => {
 // API ดึงสรุปแคลอรี่และสารอาหารรายวัน (Get Daily Summary)
 
 app.get('/daily-summary/:userId/:date', (req, res) => {
-    // 1. รับค่า user_id และ date จาก URL (เช่น /daily-summary/1/2026-03-06)
+    // รับค่า user_id และ date จาก URL (เช่น /daily-summary/1/2026-03-06)
     const { userId, date } = req.params;
 
-    // 2. คำสั่ง SQL ขั้นเทพ: นำตาราง food_logs มา JOIN กับ foods
+    // คำสั่ง SQL ขั้นเทพ: นำตาราง food_logs มา JOIN กับ foods
     const sql = `
         SELECT 
             fl.id AS log_id,
@@ -196,14 +196,14 @@ app.get('/daily-summary/:userId/:date', (req, res) => {
         WHERE fl.user_id = ? AND fl.log_date = ?
     `;
 
-    // 3. สั่งรัน SQL
+    // สั่งรัน SQL
     db.query(sql, [userId, date], (err, results) => {
         if (err) {
             console.error('❌ Error fetching daily summary:', err);
             return res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลสรุปรายวันได้' });
         }
 
-        // 4. นำผลลัพธ์มาบวกเลขรวมกัน (Sum) เพื่อทำสรุปยอด
+        // นำผลลัพธ์มาบวกเลขรวมกัน (Sum) เพื่อทำสรุปยอด
         let summary = {
             total_calories: 0,
             total_protein: 0,
@@ -218,7 +218,7 @@ app.get('/daily-summary/:userId/:date', (req, res) => {
             summary.total_fat += parseFloat(item.total_fat);
         });
 
-        // 5. ส่งข้อมูลกลับไปให้หน้าบ้าน (ทั้งยอดรวม และรายการอาหารย่อยๆ)
+        // ส่งข้อมูลกลับไปให้หน้าบ้าน (ทั้งยอดรวม และรายการอาหารย่อยๆ)
         res.status(200).json({
             date: date,
             summary: summary,
@@ -227,13 +227,12 @@ app.get('/daily-summary/:userId/:date', (req, res) => {
     });
 });
 
-// API ดึงข้อมูลส่วนตัวผู้ใช้ (Get Profile)
 
+// API ดึงข้อมูลส่วนตัวผู้ใช้ (Get Profile)
 app.get('/users/:id', (req, res) => {
     const userId = req.params.id;
 
-    // คำสั่ง SQL: ดึงข้อมูลทุกอย่าง *ยกเว้น* รหัสผ่าน (เพื่อความปลอดภัย)
-    const sql = `SELECT id, username, email, weight, height, age, gender, activity_level, created_at 
+    const sql = `SELECT id, username, email, weight, height, age, gender, activity_level, goal, created_at 
                  FROM users WHERE id = ?`;
 
     db.query(sql, [userId], (err, results) => {
@@ -242,12 +241,10 @@ app.get('/users/:id', (req, res) => {
             return res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลผู้ใช้ได้' });
         }
 
-        // เช็คว่าเจอผู้ใช้คนนี้ไหม
         if (results.length === 0) {
             return res.status(404).json({ error: 'ไม่พบข้อมูลผู้ใช้ในระบบ' });
         }
 
-        // ส่งข้อมูลกลับไปให้หน้าบ้าน
         res.status(200).json(results[0]);
     });
 });
@@ -291,5 +288,5 @@ app.put('/users/:id', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server เปิดทำงานแล้วที่ http://localhost:${PORT}`);
+    console.log(`Server เปิดทำงานแล้วที่ http://localhost:${PORT}`);
 });
