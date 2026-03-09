@@ -126,7 +126,7 @@ const goTo = (path) => {
 .btn-login { background: transparent; color: #4CAF50; border: 2px solid #4CAF50 !important; }
 .btn-login:hover { background: #e8f5e9; }
 .btn-register { background: #4CAF50; color: white; }
-.btn-register:hover { background: #45a049; }
+.btn-register:hover { background: #d4af37; }
 
 /* ระบบเลื่อนหน้าจอ (Scroll Snap) */
 .scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }

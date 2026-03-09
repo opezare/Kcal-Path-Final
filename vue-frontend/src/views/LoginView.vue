@@ -1,22 +1,47 @@
 <template>
-  <div class="login-container">
-    <h1>ระบบบันทึกแคลอรี่ 🍽️</h1>
-    <h2>เข้าสู่ระบบ</h2>
-    
-    <div class="form-group">
-      <label>ชื่อผู้ใช้:</label>
-      <input type="text" v-model="username" placeholder="กรอกชื่อผู้ใช้" @keyup.enter="login">
-    </div>
-    
-    <div class="form-group">
-      <label>รหัสผ่าน:</label>
-      <input type="password" v-model="password" placeholder="กรอกรหัสผ่าน" @keyup.enter="login">
-    </div>
+  <div class="login-wrapper">
+    <!-- <img 
+      src="https://media.giphy.com/media/3o7TKo6fjy7XydHCiQ/giphy.gif" 
+      alt="Premium Background" 
+      class="gif-bg"
+    /> -->
+    <div class="overlay"></div>
 
-    <button @click="login">เข้าสู่ระบบ</button>
-    <hr>
-    
-    <p>ยังไม่มีบัญชีใช่ไหม? <button @click="goToRegister" class="btn-register">สมัครสมาชิกเลย</button></p>
+    <div class="login-container glass-card">
+      <h1 class="premium-title">Kcal-Path 🍽️</h1>
+      <h2 class="subtitle">เข้าสู่ระบบเพื่อจัดการสุขภาพ</h2>
+      
+      <div class="form-group">
+        <label>ชื่อผู้ใช้ (Username)</label>
+        <input 
+          type="text" 
+          v-model="username" 
+          class="glass-input" 
+          placeholder="กรอกชื่อผู้ใช้" 
+          @keyup.enter="login"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label>รหัสผ่าน (Password)</label>
+        <input 
+          type="password" 
+          v-model="password" 
+          class="glass-input" 
+          placeholder="กรอกรหัสผ่าน" 
+          @keyup.enter="login"
+        >
+      </div>
+
+      <button @click="login" class="premium-btn">เข้าสู่ระบบ</button>
+      
+      <div class="divider"></div>
+      
+      <p class="register-link">
+        ยังไม่มีบัญชีใช่ไหม? 
+        <button @click="goToRegister" class="btn-link text-accent">สมัครสมาชิกเลย</button>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -74,51 +99,152 @@ const goToRegister = () => {
 </script>
 
 <style scoped>
+/* 🎨 --- พื้นหลัง --- */
+.login-wrapper {
+  min-height: 100vh;
+  position: relative;
+  font-family: 'Prompt', sans-serif;
+  color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.gif-bg {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  object-fit: cover; z-index: 0; opacity: 0.6; 
+}
+
+.overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(15, 23, 42, 0.4); 
+  z-index: 1;
+}
+
+/* 🎨 --- คอนเทนเนอร์หลัก (ดีไซน์โปร่งแสงพรีเมียม) --- */
 .login-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px; /* ขนาดกะทัดรัดกว่าหน้า Register นิดหน่อยเพื่อให้ฟอร์มดูแน่นสวย */
   text-align: center;
 }
-.form-group {
-  margin-bottom: 15px;
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 40px 35px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.premium-title {
+  margin-top: 0;
+  color: #ffffff;
+  font-weight: 400;
+  letter-spacing: 1px;
+  font-size: 2em;
+  margin-bottom: 5px;
+}
+
+.subtitle { 
+  color: #cbd5e1; 
+  margin-bottom: 30px; 
+  font-weight: 300; 
+  font-size: 1.1em;
+}
+
+.text-accent { color: #d4af37; /* สีทองแชมเปญ */ font-weight: 400; }
+
+/* 🎨 --- ส่วนของฟอร์ม --- */
+.form-group { 
+  margin-bottom: 20px; 
   text-align: left;
 }
-input {
+
+label { 
+  display: block; 
+  font-weight: 300; 
+  margin-bottom: 8px; 
+  color: #e2e8f0; 
+  font-size: 0.95em; 
+}
+
+/* 🎨 --- Input Fields แบบหรูหรา --- */
+.glass-input {
   width: 100%;
-  padding: 10px;
-  margin-top: 5px;
+  padding: 14px 15px;
   box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #4CAF50;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
+  border-radius: 12px;
+  font-size: 1.05em;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 300;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  border-color: #d4af37; /* ตอนกดพิมพ์ ขอบจะเปลี่ยนเป็นสีทอง */
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+.glass-input::placeholder { color: #94a3b8; font-weight: 300; }
+
+/* 🎨 --- ปุ่มกดพรีเมียม (สีทอง) --- */
+.premium-btn {
+  width: 100%;
+  padding: 15px;
+  margin-top: 15px;
+  background: linear-gradient(135deg, #d4af37, #b58d22);
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 12px;
+  font-size: 1.15em;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 16px;
-  transition: 0.3s;
+  transition: all 0.4s ease;
+  font-family: 'Prompt', sans-serif;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
-button:hover {
-  background-color: #45a049;
+
+.premium-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+  background: linear-gradient(135deg, #e6c55d, #c59b27);
 }
-.btn-register {
-  background-color: transparent;
-  color: #4CAF50;
-  width: auto;
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  margin: 30px 0 20px;
+}
+
+.register-link { 
+  color: #cbd5e1; 
+  font-size: 0.95em; 
+  font-weight: 300; 
+  margin: 0;
+}
+
+.btn-link {
+  background: none; border: none; font-size: 1em;
+  text-decoration: none; cursor: pointer;
+  font-family: 'Prompt', sans-serif; transition: 0.3s;
+  font-weight: 400;
   padding: 0;
-  font-size: 14px;
-  text-decoration: underline;
 }
-.btn-register:hover {
-  background-color: transparent;
-  color: #388E3C;
+.btn-link:hover { color: #f3e5ab; text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .glass-card { padding: 30px 20px; }
 }
 </style>
