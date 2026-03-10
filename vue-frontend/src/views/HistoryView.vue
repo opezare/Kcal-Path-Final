@@ -12,8 +12,8 @@
     <div class="history-container">
       
       <header class="history-header">
-        <h1>📅 ประวัติการกินย้อนหลัง</h1>
-        <button @click="router.push('/dashboard')" class="btn-glass btn-back">⬅️ กลับหน้าหลัก</button>
+        <h1> ประวัติการกินย้อนหลัง</h1>
+        <button @click="router.push('/dashboard')" class="btn-glass btn-back"> กลับหน้าหลัก</button>
       </header>
 
       <div class="glass-card date-picker-card">
@@ -48,14 +48,14 @@
         </div>
 
         <div class="macros-flex">
-          <div class="macro-badge">🥩 โปรตีน: <span>{{ totalProtein }}g</span></div>
-          <div class="macro-badge">🍚 คาร์บ: <span>{{ totalCarbs }}g</span></div>
-          <div class="macro-badge">🥑 ไขมัน: <span>{{ totalFat }}g</span></div>
+          <div class="macro-badge"> โปรตีน: <span>{{ totalProtein }}g</span></div>
+          <div class="macro-badge"> คาร์บ: <span>{{ totalCarbs }}g</span></div>
+          <div class="macro-badge"> ไขมัน: <span>{{ totalFat }}g</span></div>
         </div>
       </div>
 
       <div class="glass-card food-list-card">
-        <h3>🍽️ รายการอาหาร:</h3>
+        <h3> รายการอาหาร:</h3>
         
         <div v-if="foodLogs.length === 0" class="empty-state">
           <p>ไม่พบข้อมูลการกินของวันนี้</p>

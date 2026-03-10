@@ -45,17 +45,17 @@
           <h3>สารอาหารที่ได้รับ (Macros)</h3>
           
           <div class="macro-box protein">
-            <div class="macro-header"><span>🥩 โปรตีน</span> <span>{{ totalProtein }} g</span></div>
+            <div class="macro-header"><span>โปรตีน</span> <span>{{ totalProtein }} g</span></div>
             <div class="macro-bar"><div class="fill" :style="{ width: Math.min((totalProtein / 150) * 100, 100) + '%' }"></div></div>
           </div>
 
           <div class="macro-box carbs">
-            <div class="macro-header"><span>🍚 คาร์บ</span> <span>{{ totalCarbs }} g</span></div>
+            <div class="macro-header"><span> คาร์บ</span> <span>{{ totalCarbs }} g</span></div>
             <div class="macro-bar"><div class="fill" :style="{ width: Math.min((totalCarbs / 250) * 100, 100) + '%' }"></div></div>
           </div>
 
           <div class="macro-box fat">
-            <div class="macro-header"><span>🥑 ไขมัน</span> <span>{{ totalFat }} g</span></div>
+            <div class="macro-header"><span>ไขมัน</span> <span>{{ totalFat }} g</span></div>
             <div class="macro-bar"><div class="fill" :style="{ width: Math.min((totalFat / 70) * 100, 100) + '%' }"></div></div>
           </div>
         </div>
@@ -87,7 +87,7 @@
       <section class="food-logs-section">
         <div class="glass-card full-width">
           <div class="log-header">
-            <h3>🍽️ รายการอาหารวันนี้</h3>
+            <h3>รายการอาหารวันนี้</h3>
             <button @click="goToAddFood" class="btn-primary">+ เพิ่มมื้ออาหาร</button>
           </div>
 
@@ -146,9 +146,9 @@ const formatGender = (genderStr) => {
 
 const formatGoal = (goalStr) => {
   const goals = {
-    'lose': '📉 ลดน้ำหนัก',
-    'maintain': '⚖️ รักษาน้ำหนัก',
-    'gain': '💪 เพิ่มกล้ามเนื้อ'
+    'lose': ' ลดน้ำหนัก',
+    'maintain': ' รักษาน้ำหนัก',
+    'gain': ' เพิ่มกล้ามเนื้อ'
   }
   return goals[goalStr] || goalStr
 }
@@ -205,8 +205,12 @@ const fetchDashboardData = async () => {
             calculateHealth(userData.weight, userData.height, userData.age, userData.gender, userData.activity_level)
         }
 
-        const d = new Date()
-        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        const today = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Asia/Bangkok', 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit' 
+}).format(new Date());
         
         const summaryRes = await fetch(`http://localhost:3000/daily-summary/${userId}/${today}`)
         if (summaryRes.ok) {

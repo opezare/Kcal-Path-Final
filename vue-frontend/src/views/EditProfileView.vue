@@ -51,9 +51,9 @@
           <div class="form-group">
             <label>เป้าหมายของคุณ</label>
             <select v-model="form.goal" class="custom-select">
-              <option value="lose">📉 ลดน้ำหนัก / ลดไขมัน</option>
-              <option value="maintain">⚖️ รักษาน้ำหนัก / สุขภาพดี</option>
-              <option value="gain">💪 เพิ่มน้ำหนัก / สร้างกล้ามเนื้อ</option>
+              <option value="lose"> ลดน้ำหนัก / ลดไขมัน</option>
+              <option value="maintain"> รักษาน้ำหนัก / สุขภาพดี</option>
+              <option value="gain"> เพิ่มน้ำหนัก / สร้างกล้ามเนื้อ</option>
             </select>
           </div>
         </div>
